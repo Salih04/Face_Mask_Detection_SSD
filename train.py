@@ -18,12 +18,8 @@ import pickle
 IMG_SIZE = 64
 
 # Update these paths to your local directories
-ANNOTATION_DIR = "C:\\Users\\salih\\Desktop\\annotations"  # Directory containing .xml annotation files
-IMAGES_DIR     = "C:\\Users\\salih\\Desktop\\images"       # Directory containing images
-
-# -------------------------------------------------------------------
-# Function to load XML annotations
-# -------------------------------------------------------------------
+ANNOTATION_DIR = "C:\\Users\\salih\\Desktop\\annotations"  
+IMAGES_DIR     = "C:\\Users\\salih\\Desktop\\images"       
 def load_xml_annotations(annotation_dir):
     annotations = []
     for filename in os.listdir(annotation_dir):
@@ -52,9 +48,6 @@ def load_xml_annotations(annotation_dir):
             annotations.append(item)
     return annotations
 
-# -------------------------------------------------------------------
-# Preprocess Images
-# -------------------------------------------------------------------
 def preprocess_images(annotations, img_size=(64, 64)):
     images, labels = [], []
 
@@ -80,26 +73,17 @@ def preprocess_images(annotations, img_size=(64, 64)):
 
     return np.array(images), labels
 
-# -------------------------------------------------------------------
-# Load annotations and preprocess images
-# -------------------------------------------------------------------
 annotations = load_xml_annotations(ANNOTATION_DIR)
 X, y = preprocess_images(annotations, img_size=(IMG_SIZE, IMG_SIZE))
 
 # Normalize and reshape
 X = X / 255.0  # Normalize pixel values to [0, 1]
-X_cnn = X.reshape(-1, IMG_SIZE, IMG_SIZE, 1)  # For CNN input
+X_cnn = X.reshape(-1, IMG_SIZE, IMG_SIZE, 1)  
 
-# -------------------------------------------------------------------
-# Encode labels
-# -------------------------------------------------------------------
 encoder_for_cnn = LabelEncoder()
 encoded_y_cnn = encoder_for_cnn.fit_transform(y)
-y_cnn = to_categorical(encoded_y_cnn, num_classes=3)  # 3 classes: with_mask, without_mask, wrong_mask
+y_cnn = to_categorical(encoded_y_cnn, num_classes=3)  
 
-# -------------------------------------------------------------------
-# (Optional) Train and evaluate SVM (on flattened images)
-# -------------------------------------------------------------------
 def train_svm(X, y):
     label_encoder = LabelEncoder()
     y_encoded = label_encoder.fit_transform(y)
@@ -126,9 +110,6 @@ def train_svm(X, y):
 
 svm_model, label_encoder_svm = train_svm(X, y)
 
-# -------------------------------------------------------------------
-# (Optional) Visualize SVM predictions
-# -------------------------------------------------------------------
 def visualize_svm_predictions(svm_model, X_test, y_test, label_encoder, num_samples=10):
     y_pred = svm_model.predict(X_test)
     class_labels = label_encoder.inverse_transform(range(len(label_encoder.classes_)))
@@ -157,9 +138,7 @@ _, X_test_svm, _, y_test_svm = train_test_split(X_svm_flat, y_svm_encoded, test_
 
 visualize_svm_predictions(svm_model, X_test_svm, y_test_svm, LabelEncoder().fit(y), num_samples=10)
 
-# -------------------------------------------------------------------
 # Train CNN
-# -------------------------------------------------------------------
 def create_cnn_model(input_shape):
     model = Sequential([
         Conv2D(32, (3, 3), activation='relu', input_shape=input_shape),
@@ -190,9 +169,7 @@ cnn_model.fit(
 loss, accuracy = cnn_model.evaluate(X_test_cnn, y_test_cnn)
 print(f"CNN Test Accuracy: {accuracy * 100:.2f}%")
 
-# -------------------------------------------------------------------
 # Visualize CNN predictions
-# -------------------------------------------------------------------
 def visualize_predictions(model, X_test, y_test, label_encoder, num_samples=10):
     y_pred_prob = model.predict(X_test)
     y_pred = np.argmax(y_pred_prob, axis=1)
@@ -217,15 +194,11 @@ def visualize_predictions(model, X_test, y_test, label_encoder, num_samples=10):
 
 visualize_predictions(cnn_model, X_test_cnn, y_test_cnn, encoder_for_cnn, num_samples=10)
 
-# -------------------------------------------------------------------
 # Save the final Keras model
-# -------------------------------------------------------------------
 cnn_model.save("final.keras")
 print("CNN model saved as 'final.keras")
 
-# -------------------------------------------------------------------
 # Save the LabelEncoder used for the CNN
-# -------------------------------------------------------------------
 with open("label_encoder.pkl", "wb") as f:
     pickle.dump(encoder_for_cnn, f)
 print("LabelEncoder saved as 'label_encoder.pkl'.")
