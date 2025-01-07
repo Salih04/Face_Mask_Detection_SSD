@@ -3,16 +3,10 @@ import numpy as np
 import tensorflow as tf
 import pickle
 
-# -----------------------------
-# User-defined settings
-# -----------------------------
 MODEL_PATH = "final.keras"
 LABEL_ENCODER_PATH = "label_encoder.pkl"
 IMG_SIZE = 64
 
-# -----------------------------
-# Load the trained Keras model
-# -----------------------------
 model = tf.keras.models.load_model(MODEL_PATH)
 print(f"Loaded model from {MODEL_PATH}")
 
@@ -25,24 +19,14 @@ class_labels = encoder_for_cnn.classes_.tolist()
 print("Loaded label encoder classes:", class_labels)
 # Example might be: ["with_mask", "without_mask", "wrong_mask"]
 
-# -----------------------------
-# Initialize Video Capture
-# -----------------------------
 cap = cv2.VideoCapture(0)  # 0 = default webcam
 if not cap.isOpened():
     print("Could not open webcam.")
     exit()
 
-# -----------------------------
-# Optional: Load a Haar cascade
-# for face detection
-# -----------------------------
 cascade_path = cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
 face_cascade = cv2.CascadeClassifier(cascade_path)
 
-# -----------------------------
-# Real-time Inference Loop
-# -----------------------------
 while True:
     ret, frame = cap.read()
     if not ret:
@@ -92,9 +76,8 @@ while True:
     # Show the video frame
     cv2.imshow("Real-Time Inference", frame)
 
-    # Press 'q' or ESC to quit
     key = cv2.waitKey(1)
-    if key & 0xFF in [ord('q'), 27]:  # 27 = ESC
+    if key & 0xFF in [ord('q'), 27]:  
         break
 
 cap.release()
